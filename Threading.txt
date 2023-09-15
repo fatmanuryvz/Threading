@@ -1,0 +1,49 @@
+import threading
+import requests
+import time
+
+
+def get_data_syns(urls):
+    st = time.time() #start time
+    json_array = []
+    for url in urls:
+        json_array.append(requests.get(url).json())
+    et = time.time() #end time
+    elapsed_time = et -st
+    print("Execution time: ", elapsed_time, "seconds")
+    return json_array
+
+
+class ThreadingDownloader(threading.Thread):
+    json_array = []
+
+    def __init__(self,url):
+       super().__init__() #kalıtımda böyle yapılır
+       self.url = url
+
+    def run(self):
+        response = requests.get(self.url)
+        self.json_array.append(response.json())
+        return self.json_array
+
+def get_data_threading(urls):
+    st = time.time()  # start time
+    threads = []
+    for url in urls:
+        t = ThreadingDownloader(url)
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
+        print(t)
+
+    et = time.time()  # end time
+    elapsed_time = et - st
+    print("Execution time: ", elapsed_time, "seconds")
+    #return json_array
+
+
+urls = ["https://postman-echo.com/delay/3"] * 5
+#get_data_syns(urls) #18 sn de
+get_data_threading(urls) #4 sn de tamamladı! hepsi paralel çalıştığı için kısa zamanda tamamladı
